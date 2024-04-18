@@ -4,53 +4,56 @@ A Clojure/Clojurescript lib and toolbox to easily compose your own
 converion functions to convert between different type of casings (kebab,
 snake, camel, pascal and similar).
 
-## Why not use just use the camel-snake-kebab lib?
+### Why not use just use the camel-snake-kebab lib?
 
 [camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab) is
 an easy to use library, but if your use case doesn't match
-the lib exactly, it quickly gets harder to use. It lacks support for
-namespaced keywords and symbols and it's character classification does not
-take unicode character classification into account, which stops some use
-cases.
+the lib exactly, it quickly gets harder. It lacks support for namespaced
+keywords and symbols, and its character classification does not take
+unicode character classification into account, which stops some use cases.
 
 ## Approach
 
-Instead of providing a number of conversion functions from a to b (in
-whatever casing-style a and b might be), this library tries to take a more
-composable DIY approach.
+Instead of providing a number of conversion functions from a to b, this
+library contains the parts to make it easy to do-it-yourself.
 
-Since there is no authority on what each casing is called (do you call
-`:this-thing` kebab-case or lisp-case?), nor any exact rules for
-a particular casing (is `:this-Thing` still kebab-case or something
-else?), the approach we take is "build-your-own" using the `convert`
-function.
+Also, since there is no authority on what each casing is called (do you
+call
+[`:this-thing`](https://en.wikipedia.org/wiki/Naming_convention_(programming)#Examples_of_multiple-word_identifier_formats)
+kebab-case or lisp-case?), nor any exact rules for a particular casing (is
+`:this-Thing` still kebab-case or something else?), you are also
+responsible for name things the way you actually call it.
+
+To roll you own, you use `fooheads.casing/convert`.
 
 `convert` takes a `split-fn`, a `map-fn` a `join-fn`, an optional
-`coerce-fn` and a value to convert. To define your own thing, you
+`coerce-fn` and a value to convert. To define your own thing, you can
 partially apply the `convert` function and give it a name.
 
 ## Examples
-
-Let's say you want to convert from pascal-case to kebab-case, then you can
-define that function like this:
 
 ```clojure
 (require
   '[fooheads.casing :as casing]
   '[fooheads.casing.coerce :as coerce]
   '[fooheads.casing.string :as string])
+```
 
+Let's say you want a function to convert from pascal-case to kebab-case.
+Then you can define that function like this:
 
+```clojure
 (def pascal->kebab
-  (partial casing/convert string/split-wordnums string/map-lower string/join-kebab))```
+  (partial casing/convert string/split-wordnum string/map-lower string/join-dash))
+```
 
-If you want to convert from snake-case to camel-case and always get
-a keyword back, you can create a function like this:
+If you want a function to convert from snake-case to camel-case and always
+get a keyword back, you can create a function like this:
 
 ```clojure
 (def snake->camel-keyword
-  (partial casing/convert string/split-snake string/map-camel string/join-blank coerce/keyword))```
-
+  (partial casing/convert string/split-snake string/map-camel string/join-blank coerce/keyword))
+```
 
 What's important is that when you need to step out of the most common
 cases, you just provide your own function for splitting,
@@ -61,7 +64,8 @@ and upcase vowels:
 
 ```clojure
 (def snake->vowel-kebab
-  (partial casing/convert string/split-snake my-mixed-case string/join-dash))```
+  (partial casing/convert string/split-snake my-mixed-case string/join-dash))
+```
 
 
 ## The functions
@@ -73,7 +77,7 @@ and upcase vowels:
   * `split-dash` - splits on dashes
   * `split-underscore` - splits on underscore
   * `split-word` - splits a typical `camelCase` or `PascalCase` string
-  * `split-wordnum` - splits a typical `camelCase` or `PascalCase` string, 
+  * `split-wordnum` - splits a typical `camelCase` or `PascalCase` string,
     but keeps trailing digits in the word
 
 
@@ -90,7 +94,7 @@ unicode aware regarding uppercase and lowercase.
 
 ### join-fn
 
-`join-fn` simply joins strings. The built-in functions are just thin, 
+`join-fn` simply joins strings. The built-in functions are just thin,
 named wrappers of `clojure.string/join`:
 
   * `join-blank` - joins without a separator
@@ -100,7 +104,7 @@ named wrappers of `clojure.string/join`:
 ### coerce-fn
 
 `coerce-fn` takes a `namespace` string and a `name` string (since the
-original value can be a qualified ident) and returns something new. 
+original value can be a qualified ident) and returns something new.
 It can choose to ignore either of the parts.
 
    * `keyword` - same as `clojure.core/keyword`
